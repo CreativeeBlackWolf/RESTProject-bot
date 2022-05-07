@@ -1,0 +1,23 @@
+version: '3.7'
+
+services:
+  bot:
+    build:
+      context: .
+    volumes:
+      - ./bot:/bot
+    command: sh -c "uvicorn main:app --host 0.0.0.0 --port 2727 --reload"
+    ports:
+      - "2727:2727"
+    env_file:
+      - ./.env
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - "./config/redis.conf:/redis.conf"
+    command: ["redis-server", "/redis.conf"]
