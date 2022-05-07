@@ -25,7 +25,7 @@ class BotCommands:
 
     @default_message_handler.setter
     def default_message_handler(self, value: Callable):
-        if isinstance(value, Callable):
+        if callable(value):
             self._default_message_handler = value
         else:
             raise ValueError(f"Handler must be Callable, not {type(value)}")
@@ -35,11 +35,13 @@ class BotCommands:
         self._default_message_handler = func
 
     def handle_command(self, text: str):
+        """Decorator for function that should handle `message_text` event type."""
         def wrapper(func: Callable):
             self._commands.update({text: func})
         return wrapper
 
     def handle_event(self, event: Union[str, Collection]):
+        """Decorator for function that should handle `message_event` event type."""
         def wrapper(func: Callable):
             if isinstance(event, str):
                 self._events.update({event: func})
