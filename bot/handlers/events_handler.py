@@ -26,7 +26,7 @@ def back_button_event(event: MessageEvent):
 @bot.commands.handle_event(event="register_user")
 def register_user_event(event: MessageEvent):
     user = bot.vk.users.get(user_ids=event.user_id)[0]
-    _, status = user_api.create_user(event.user_id, user["first_name"] + " " + user["last_name"])
+    _, status = user_api.create_user(event.user_id, f'{user["first_name"]} {user["last_name"]}')
     if status == 201:
         add_new_users(str(event.user_id))
         bot.send_message(event,

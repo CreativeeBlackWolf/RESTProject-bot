@@ -27,7 +27,7 @@ async def startup():
     if status == 200:
         delete_key("registered_users")
         for u in users:
-            add_new_users(u["id"])
+            add_new_users(u["vk_id"])
     confirmation_code, secret = bot.setup_bot()
 
 

@@ -21,33 +21,35 @@ class UserAPIRequest(DefaultAPIRequest):
         self.users_url = self.default_url + "users/"
 
     def get_user(self, user_id: int) -> Tuple[dict, int]:
-        request = self.session.get(self.users_url + user_id)
-        return request.json(), request.status_code
+        request = self.session.get(self.users_url + f"?vk_id={user_id}")
+        return request.json()[0], request.status_code
 
-    def get_users(self) -> Tuple[dict, int]:
+    def get_users(self) -> Tuple[List[dict], int]:
         request = self.session.get(self.users_url)
         return request.json(), request.status_code
 
     def create_user(self, user_id: int, name: str) -> Tuple[dict, int]:
-        data = {"id": user_id, "user": name}
+        data = {"vk_id": user_id, "user": name}
         request = self.session.post(self.users_url, data = data)
         return request.json(), request.status_code
 
 
-class WalletAPIRequest(DefaultAPIRequest):
+class WalletAPIRequest(UserAPIRequest):
     def __init__(self) -> None:
         super().__init__()
         self.wallets_url = self.default_url + "wallets/"
 
     def get_user_wallets(self, user_id: int) -> Tuple[Union[List[Wallet], dict], int]:
-        request = self.session.get(self.wallets_url + f"?user={user_id}")
+        real_id  = self.get_user(user_id)[0]["id"]
+        request = self.session.get(self.wallets_url + f"?user={real_id}")
         if request.status_code != 200:
             return request.json(), request.status_code
         return serialize_wallet(request.json()), request.status_code
 
     def create_new_wallet(self, user_id: int, wallet_name: str) -> Tuple[Union[Wallet, dict], int]:
+        real_id  = self.get_user(user_id)[0]["id"]
         data = {
-            "user": user_id,
+            "user": real_id,
             "name": wallet_name
         }
         request = self.session.post(self.wallets_url, data=data)
@@ -61,9 +63,10 @@ class WalletAPIRequest(DefaultAPIRequest):
         new_name: str,
         user_id: int
     ) -> Tuple[Union[Wallet, dict], int]:
+        real_id  = self.get_user(user_id)[0]["id"]
         data = {
             "name": new_name,
-            "user": user_id
+            "user": real_id
         }
         request = self.session.put(self.wallets_url + f"{wallet}/", data=data)
         if request.status_code != 200:
@@ -74,7 +77,7 @@ class WalletAPIRequest(DefaultAPIRequest):
         request = self.session.delete(self.wallets_url + f"{wallet}/")
         return request.status_code
 
-class TransactionsAPIRequest(DefaultAPIRequest):
+class TransactionsAPIRequest(UserAPIRequest):
     def __init__(self) -> None:
         super().__init__()
         self.transactions_api = self.default_url + "transactions/"
@@ -103,8 +106,9 @@ class TransactionsAPIRequest(DefaultAPIRequest):
         return serialize_transaction(request.json()), request.status_code
 
     def get_user_transactions(self, user_id: int, limit: int=5, incoming=False) -> Tuple[Transaction, int]:
+        real_id  = self.get_user(user_id)[0]["id"]
         if not incoming:
-            request = self.session.get(self.transactions_api + f"?from_user={user_id}")
+            request = self.session.get(self.transactions_api + f"?from_user={real_id}")
         else:
-            request = self.session.get(self.transactions_api + f"?to_user={user_id}")
+            request = self.session.get(self.transactions_api + f"?to_user={real_id}")
         return serialize_transaction(request.json())[:limit], request.status_code
