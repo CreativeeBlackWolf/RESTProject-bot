@@ -95,7 +95,7 @@ def show_latest_transactions(event: MessageEvent):
             message = "Ты пока что не совершал переводов." if not incoming \
                       else "Тебе пока что не отправляли переводов."
         else:
-            message = "Переводы:\n-----------------"
+            message = "Переводы (последние 5):\n-----------------"
             for transaction in user_transactions:
                 date = datetime.strptime(transaction.date, "%Y-%m-%dT%H:%M:%S.%f%z")
                 formatted_date = date.strftime("%d %B %Y %H:%M:%S")

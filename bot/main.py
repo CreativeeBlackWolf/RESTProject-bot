@@ -22,7 +22,7 @@ async def startup():
             users, status = wallets_api.get_users()
             break
         except ConnectionError:
-            print("cannot get to API server. retry...")
+            print(f"cannot get to API server ({wallets_api.users_url}). retry...")
             sleep(2)
     if status == 200:
         delete_key("registered_users")
