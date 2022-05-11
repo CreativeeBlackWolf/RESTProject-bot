@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Tuple, Union, Optional
 from commands.step_handler import StepHandler
 from commands.handler import BotCommands
 from vk_api.utils import get_random_id
-from secrets import token_urlsafe
+from secrets import token_hex
 from vk_api import vk_api
 
 
@@ -30,7 +30,7 @@ class Bot:
 
     @staticmethod
     def __generate_secret_key() -> str:
-        return token_urlsafe(32)
+        return token_hex(16)
 
     def __get_group_id(self) -> None:
         return self.api.method("groups.getById", values={})[0]["id"]
