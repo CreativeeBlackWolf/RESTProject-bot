@@ -27,6 +27,7 @@ class Bot:
         self.server_title = server_title or "MyCallbackServer"
         self.commands = commands or BotCommands()
         self.steps = StepHandler()
+        self.confirmation_code = None
 
     @staticmethod
     def __generate_secret_key() -> str:
@@ -36,12 +37,14 @@ class Bot:
         return self.api.method("groups.getById", values={})[0]["id"]
 
     def get_confirmation_code(self) -> str:
-        return self.api.method(
+        self.confirmation_code = self.api.method(
             "groups.getCallbackConfirmationCode",
             values={
                 "group_id": self.group_id
             }
         )["code"]
+        return self.confirmation_code
+
 
     def get_callback_servers(self) -> List[Dict[str, Any]]:
         data = {"group_id": self.group_id}
