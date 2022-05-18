@@ -1,15 +1,16 @@
 from fastapi import BackgroundTasks, FastAPI, Request, Response
-from handlers import commands_handler, events_handler # noqa
-from api.api_requests import UserAPIRequest
-from utils.redis_utils import add_new_users, delete_key
-from requests.exceptions import ConnectionError # noqa
-from handlers.handler_config import bot
 from json.decoder import JSONDecodeError
 from time import sleep
+from handlers import commands_handler, events_handler # noqa
+from api.api_requests import UserAPIRequest
+from utils.redis_utils import RedisUtils
+from requests.exceptions import ConnectionError # noqa
+from handlers.handler_config import bot
 
 
 app = FastAPI()
 wallets_api = UserAPIRequest()
+redis = RedisUtils()
 
 
 @app.on_event("startup")
@@ -22,9 +23,9 @@ async def startup():
             print(f"cannot get to API server ({wallets_api.users_url}). retry...")
             sleep(2)
     if status == 200:
-        delete_key("registered_users")
-        for u in users:
-            add_new_users(u["vk_id"])
+        redis.delete_key("registered_users")
+        for user in users:
+            redis.add_new_users(user["vk_id"])
     bot.setup_bot()
 
 

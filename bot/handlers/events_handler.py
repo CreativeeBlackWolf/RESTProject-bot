@@ -1,16 +1,17 @@
+from datetime import datetime
 from handlers.basic_answers import error_message, no_wallets_message
 from utils.keyboard import (EditWalletsKeyboard, EmptyKeyboard, MainKeyboard,
-                                UserWalletsKeyboard, WalletsKeyboard,
-                                TransactionsKeyboard)
+                            UserWalletsKeyboard, WalletsKeyboard,
+                            TransactionsKeyboard)
 from api.api_requests import TransactionsAPIRequest, UserAPIRequest, WalletAPIRequest
 from handlers.wallet_steps import delete_step, edit_choice_step, process_new_wallet
 from handlers.transaction_steps import transactions_to_or_whence_step
-from utils.redis_utils import is_registered_user, add_new_users
+from utils.redis_utils import RedisUtils
 from schemas.message import MessageEvent
 from handlers.handler_config import bot
-from datetime import datetime
 
 
+redis = RedisUtils()
 user_api = UserAPIRequest()
 wallet_api = WalletAPIRequest()
 transaction_api = TransactionsAPIRequest()
@@ -20,7 +21,7 @@ transaction_api = TransactionsAPIRequest()
 def back_button_event(event: MessageEvent):
     bot.send_message(event,
                      text="Возвращаемся в главное меню.",
-                     keyboard=MainKeyboard(is_registered_user(event.user_id)))
+                     keyboard=MainKeyboard(redis.is_registered_user(event.user_id)))
 
 
 @bot.commands.handle_event(event="register_user")
@@ -28,7 +29,7 @@ def register_user_event(event: MessageEvent):
     user = bot.vk.users.get(user_ids=event.user_id)[0]
     _, status = user_api.create_user(event.user_id, f'{user["first_name"]} {user["last_name"]}')
     if status == 201:
-        add_new_users(str(event.user_id))
+        redis.add_new_users(str(event.user_id))
         bot.send_message(event,
                          text="Ты успешно зарегистрировался!",
                          keyboard=MainKeyboard(True))

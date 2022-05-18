@@ -1,6 +1,6 @@
 from api.api_requests import WalletAPIRequest, TransactionsAPIRequest
 from utils.keyboard import MainKeyboard, UserWalletsKeyboard
-from utils.redis_utils import is_registered_user
+from utils.redis_utils import RedisUtils
 from handlers.basic_answers import error_message, stop_message, wrong_input_message
 from handlers.handler_config import bot
 from schemas.message import MessageNew
@@ -9,6 +9,7 @@ import json
 
 
 wallets_api = WalletAPIRequest()
+redis = RedisUtils()
 transactions_api = TransactionsAPIRequest()
 transactions = {}
 
@@ -49,7 +50,7 @@ def transactions_check_vk_id(message: MessageNew):
         else:
             user_id = int(message.text)
 
-        if not is_registered_user(user_id):
+        if not redis.is_registered_user(user_id):
             bot.send_message(message,
                              text="Такой пользователь не зарегистрирован в системе. Возвращаюсь.",
                              keyboard=MainKeyboard(True))
