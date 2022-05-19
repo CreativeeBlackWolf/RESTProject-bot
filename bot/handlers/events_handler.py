@@ -1,8 +1,8 @@
 from datetime import datetime
 from handlers.basic_answers import error_message, no_wallets_message
-from utils.keyboard import (EditWalletsKeyboard, EmptyKeyboard, MainKeyboard,
-                            UserWalletsKeyboard, WalletsKeyboard,
-                            TransactionsKeyboard)
+from utils.keyboard import (edit_wallets_keyboard, get_empty_keyboard, main_keyboard,
+                            user_wallets_keyboard, wallets_keyboard,
+                            transactions_keyboard)
 from api.api_requests import TransactionsAPIRequest, UserAPIRequest, WalletAPIRequest
 from handlers.wallet_steps import delete_step, edit_choice_step, process_new_wallet
 from handlers.transaction_steps import transactions_to_or_whence_step
@@ -21,7 +21,7 @@ transaction_api = TransactionsAPIRequest()
 def back_button_event(event: MessageEvent):
     bot.send_message(event,
                      text="Возвращаемся в главное меню.",
-                     keyboard=MainKeyboard(redis.is_registered_user(event.user_id)))
+                     keyboard=main_keyboard(redis.is_registered_user(event.user_id)))
 
 
 @bot.commands.handle_event(event="register_user")
@@ -32,11 +32,11 @@ def register_user_event(event: MessageEvent):
         redis.add_new_users(str(event.user_id))
         bot.send_message(event,
                          text="Ты успешно зарегистрировался!",
-                         keyboard=MainKeyboard(True))
+                         keyboard=main_keyboard(True))
     elif status == 400:
         bot.send_message(event,
                          text="Ты уже зарегистрирован.",
-                         keyboard=MainKeyboard(True))
+                         keyboard=main_keyboard(True))
     else:
         error_message(event, status)
 
@@ -58,7 +58,7 @@ f"""
 """
             bot.send_message(event,
                              text=message,
-                             keyboard=WalletsKeyboard())
+                             keyboard=wallets_keyboard())
     else:
         error_message(event, status)
 
@@ -67,7 +67,7 @@ f"""
 def create_wallet(event: MessageEvent):
     bot.send_message(event,
                      text="Придумай имя своему кошельку.",
-                     keyboard=EmptyKeyboard())
+                     keyboard=get_empty_keyboard())
     bot.steps.register_next_step_handler(event.user_id, process_new_wallet)
 
 
@@ -78,7 +78,7 @@ def make_transaction(event: MessageEvent):
         if wallets:
             bot.send_message(event,
                              text="Выбери свой кошелёк из списка",
-                             keyboard=UserWalletsKeyboard(wallets))
+                             keyboard=user_wallets_keyboard(wallets))
             bot.steps.register_next_step_handler(event.user_id, transactions_to_or_whence_step)
         else:
             no_wallets_message(event)
@@ -120,7 +120,7 @@ def show_latest_transactions(event: MessageEvent):
         bot.send_message(event,
                          text=message,
                          peer_id=event.user_id,
-                         keyboard=TransactionsKeyboard())
+                         keyboard=transactions_keyboard())
 
 
 @bot.commands.handle_event(event="edit_wallets")
@@ -130,7 +130,7 @@ def show_edit_keyboard(event: MessageEvent):
         if wallets:
             bot.send_message(event,
                              text="Редактирование кошельков.",
-                             keyboard=EditWalletsKeyboard())
+                             keyboard=edit_wallets_keyboard())
         else:
             no_wallets_message(event)
 
@@ -144,7 +144,7 @@ def edit_user_wallet(event: MessageEvent):
     if status == 200:
         bot.send_message(event,
                          text="Выбери кошелёк из списка",
-                         keyboard=UserWalletsKeyboard(wallets, show_balance=False))
+                         keyboard=user_wallets_keyboard(wallets, show_balance=False))
         if event.payload["cmd"] == "edit_wallet":
             bot.steps.register_next_step_handler(event.user_id, edit_choice_step)
         else:

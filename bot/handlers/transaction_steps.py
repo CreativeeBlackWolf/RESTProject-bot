@@ -1,5 +1,5 @@
 from api.api_requests import WalletAPIRequest, TransactionsAPIRequest
-from utils.keyboard import MainKeyboard, UserWalletsKeyboard
+from utils.keyboard import main_keyboard, user_wallets_keyboard
 from utils.redis_utils import RedisUtils
 from handlers.basic_answers import error_message, stop_message, wrong_input_message
 from handlers.handler_config import bot
@@ -43,7 +43,7 @@ def transactions_check_vk_id(message: MessageNew):
             if not user:
                 bot.send_message(message,
                     text="Ссылка введена неверно или такого пользователя не существует",
-                    keyboard=MainKeyboard(True)
+                    keyboard=main_keyboard(True)
                 )
                 return
             user_id = user[0]["id"]
@@ -53,7 +53,7 @@ def transactions_check_vk_id(message: MessageNew):
         if not redis.is_registered_user(user_id):
             bot.send_message(message,
                              text="Такой пользователь не зарегистрирован в системе. Возвращаюсь.",
-                             keyboard=MainKeyboard(True))
+                             keyboard=main_keyboard(True))
             return
 
         wallets, status = wallets_api.get_user_wallets(user_id)
@@ -61,11 +61,11 @@ def transactions_check_vk_id(message: MessageNew):
             if not wallets:
                 bot.send_message(message,
                                  text="У пользователя с таким ID нет кошельков. Возвращаюсь",
-                                 keyboard=MainKeyboard(True))
+                                 keyboard=main_keyboard(True))
                 return
             bot.send_message(message,
                              text="Выбери кошелёк получателя.",
-                             keyboard=UserWalletsKeyboard(wallets, show_balance=False))
+                             keyboard=user_wallets_keyboard(wallets, show_balance=False))
 
             transactions[message.from_id]["recipient_id"] = user_id
             bot.steps.register_next_step_handler(message.from_id, transactions_payment_step)
@@ -100,12 +100,12 @@ def transactions_comment_step(message: MessageNew):
         if transactions[message.from_id]["balance"] < transactions[message.from_id]["payment"]:
             bot.send_message(message,
                              text="Недостаточно средств. Возвращаюсь.",
-                             keyboard=MainKeyboard(True))
+                             keyboard=main_keyboard(True))
             return
     except ValueError:
         bot.send_message(message,
                          text="Количество переводимых средств должно быть целым положительным числом.",
-                         keyboard=MainKeyboard(True))
+                         keyboard=main_keyboard(True))
         return
     bot.send_message(message,
                      text="Оставьте комментарий (введите \"нет\", если не нужно).")
@@ -120,7 +120,7 @@ def transactions_final_step(message: MessageNew):
         if len(transactions[message.from_id]["comment"]) > 128:
             bot.send_message(message,
                              text="Количество символов в комментарии не должно привышать 128 символов",
-                             keyboard=MainKeyboard(True))
+                             keyboard=main_keyboard(True))
             return
     else:
         transactions[message.from_id]["comment"] = None
@@ -129,7 +129,7 @@ def transactions_final_step(message: MessageNew):
     if status == 201:
         bot.send_message(message,
                          text="Перевод отправлен!",
-                         keyboard=MainKeyboard(True))
+                         keyboard=main_keyboard(True))
 
         # if the payment was sent to the user
         if transaction_data["recipient_id"] is not None:

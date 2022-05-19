@@ -8,6 +8,12 @@ class MessageEventTypes:
 
 
 class MessageBase(BaseModel):
+    """
+    Variables that are presented in every `message`-like events.
+    
+    Reference: https://dev.vk.com/api/community-events/json-schema
+    """
+
     # response root
     type: str
 
