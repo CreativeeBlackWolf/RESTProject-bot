@@ -18,6 +18,7 @@ class BotSettings(BaseSettings):
 class RedisSettings(BaseSettings):
     host: str
     port: int
+    password: Optional[str] = None
 
     class Config:
         env_prefix = "REDIS_"

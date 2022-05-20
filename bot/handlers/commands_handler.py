@@ -22,7 +22,7 @@ def hello_command(message: MessageNew):
 
 
 @bot.commands.handle_command(text="Кошельки")
-def wallets_keyboard(message: MessageNew):
+def wallets_keyboard_command(message: MessageNew):
     if not redis.is_registered_user(message.from_id):
         not_registered_message(message)
         return
@@ -32,7 +32,7 @@ def wallets_keyboard(message: MessageNew):
 
 
 @bot.commands.handle_command(text="Транзакции")
-def transactions_keyboard(message: MessageNew):
+def transactions_keyboard_command(message: MessageNew):
     if not redis.is_registered_user(message.from_id):
         not_registered_message(message)
         return

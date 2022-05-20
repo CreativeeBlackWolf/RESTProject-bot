@@ -1,9 +1,9 @@
-from requests.adapters import HTTPAdapter
 from typing import Optional, Tuple, List, Union
-from settings import get_api_settings
-from schemas.models import (Transaction, serialize_transaction,
-                                Wallet, serialize_wallet)
 from uuid import UUID
+from schemas.models import (Transaction, serialize_transaction,
+                            Wallet, serialize_wallet)
+from settings import get_api_settings
+from requests.adapters import HTTPAdapter
 import requests
 
 

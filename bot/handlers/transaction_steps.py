@@ -29,6 +29,8 @@ def transactions_to_or_whence_step(message: MessageNew):
         "from_wallet": payload["UUID"],
         "balance": payload["balance"]
     }
+    redis.add_trasaction_step_data(message.from_id, "from_wallet", payload["UUID"])
+    redis.add_trasaction_step_data(message.from_id, "balance", payload["balance"])
     bot.send_message(message,
         text="Введи ID пользователя в ВК (можно ссылкой) или куда ты хочешь перевести деньги."
     )
@@ -68,9 +70,10 @@ def transactions_check_vk_id(message: MessageNew):
                              keyboard=user_wallets_keyboard(wallets, show_balance=False))
 
             transactions[message.from_id]["recipient_id"] = user_id
+            redis.add_trasaction_step_data(message.from_id, "recipient_id", user_id)
             bot.steps.register_next_step_handler(message.from_id, transactions_payment_step)
     except ValueError:
-        transactions[message.from_id]["recipient_id"] = None
+        redis.add_trasaction_step_data(message.from_id, "recipient_id", None)
         transactions_payment_step(message)
 
 def transactions_payment_step(message: MessageNew):
@@ -80,9 +83,14 @@ def transactions_payment_step(message: MessageNew):
     # if uuid is given
     if message.payload:
         payload = json.loads(message.payload)
+        redis.add_trasaction_step_data(message.from_id, "to_wallet", payload["UUID"])
+        redis.add_trasaction_step_data(message.from_id, "whence", None)
+
         transactions[message.from_id]["to_wallet"] = payload["UUID"]
         transactions[message.from_id]["whence"] = None
     else:
+        redis.add_trasaction_step_data(message.from_id, "to_wallet", None)
+        redis.add_trasaction_step_data(message.from_id, "whence", message.text)
         transactions[message.from_id]["to_wallet"] = None
         transactions[message.from_id]["whence"] = message.text
     bot.send_message(message,
@@ -95,6 +103,7 @@ def transactions_comment_step(message: MessageNew):
         return
     try:
         transactions[message.from_id]["payment"] = int(message.text)
+        redis.add_trasaction_step_data(message.from_id, "payment", int(message.text))
         if transactions[message.from_id]["payment"] <= 0:
             raise ValueError
         if transactions[message.from_id]["balance"] < transactions[message.from_id]["payment"]:
@@ -117,6 +126,7 @@ def transactions_final_step(message: MessageNew):
         return
     if message.text.lower() not in ("нет", "н", "no", "n"):
         transactions[message.from_id]["comment"] = message.text
+        
         if len(transactions[message.from_id]["comment"]) > 128:
             bot.send_message(message,
                              text="Количество символов в комментарии не должно привышать 128 символов",
@@ -125,6 +135,7 @@ def transactions_final_step(message: MessageNew):
     else:
         transactions[message.from_id]["comment"] = None
     transaction_data = transactions.pop(message.from_id, None)
+    print(redis.get_transaction_step_data(message.from_id))
     transaction, status = transactions_api.make_transaction(**transaction_data)
     if status == 201:
         bot.send_message(message,
