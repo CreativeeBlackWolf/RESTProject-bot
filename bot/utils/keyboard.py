@@ -77,6 +77,14 @@ def edit_wallets_keyboard():
     return keyboard.get_keyboard()
 
 def user_wallets_keyboard(wallets: List[Wallet], show_balance: bool=True):
+    """
+    Display keyboard with given wallets, so the user can select one.
+
+    Parameters
+    ----------
+    `show_balance`
+        Display the balance with wallet name.
+    """
     keyboard = VkKeyboard(one_time=True)
     for k, wallet in enumerate(wallets):
         payload = {}
@@ -85,7 +93,7 @@ def user_wallets_keyboard(wallets: List[Wallet], show_balance: bool=True):
             label = wallet.name
         else:
             if len(wallet.name) > 20:
-                wallet.name = wallet.name[:15] + "..."
+                wallet.name = wallet.name[:17] + "..."
             label = label=f"{wallet.name} | Баланс: {wallet.balance}"
             payload["balance"] = wallet.balance
 

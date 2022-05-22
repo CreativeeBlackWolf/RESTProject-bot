@@ -43,7 +43,7 @@ class RedisUtils:
         elif isinstance(value, list):
             self.__redis_db.sadd("registered_users", *value)
 
-    def add_trasaction_step_data(
+    def add_transaction_step_data(
         self, 
         user_id: Union[str, int], 
         key: str, 
@@ -54,5 +54,9 @@ class RedisUtils:
         return self.__redis_json.set(self.transaction_step_data, Path(f".{user_id}.{key}"), value)
 
     def get_transaction_step_data(self, user_id: Union[str, int]) -> dict:
+        """
+        Get temporary transaction information and delete it.
+        """
         data = self.__redis_json.get(self.transaction_step_data, Path(f".{user_id}"))
+        self.__redis_json.delete(self.transaction_step_data, Path(f".{user_id}"))
         return data

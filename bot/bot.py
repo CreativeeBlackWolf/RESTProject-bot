@@ -70,6 +70,8 @@ class Bot:
     def add_callback_server(self) -> int:
         """
         Create new callback server.
+
+        Returns `server_id`.
         """
         data = {
             "group_id": self.group_id,
@@ -86,9 +88,9 @@ class Bot:
 
         Parameters
         ----------
-        server_id : int
+        `server_id`
             ID of existing callback server.
-        secret_key:
+        `secret_key`
             A new secret.
         """
         if secret_key is None:
