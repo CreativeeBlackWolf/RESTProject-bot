@@ -63,7 +63,7 @@ class WalletAPIRequest(UserAPIRequest):
         new_name: str,
         user_id: int
     ) -> Tuple[Union[Wallet, dict], int]:
-        real_id  = self.get_user(user_id)[0]["id"]
+        real_id = self.get_user(user_id)[0]["id"]
         data = {
             "name": new_name,
             "user": real_id

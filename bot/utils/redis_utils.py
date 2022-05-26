@@ -43,6 +43,21 @@ class RedisUtils:
         elif isinstance(value, list):
             self.__redis_db.sadd("registered_users", *value)
 
+    def add_wallet_step_data(
+        self, 
+        user_id: Union[str, int], 
+        key: str, 
+        value: Union[str, int]
+    ) -> bool:
+        if not self.__redis_json.type(self.wallet_step_data, Path(f".{user_id}")):
+            self.__redis_json.set(self.wallet_step_data, Path(f".{user_id}"))
+        return self.__redis_json.set(self.wallet_step_data, Path(f".{user_id}.{key}"), value)
+
+    def get_wallet_step_data(self, user_id: Union[str, int]):
+        data = self.__redis_json.get(self.wallet_step_data, Path(f".{user_id}"))
+        self.__redis_json.delete(self.wallet_step_data, Path(f".{user_id}"))
+        return data
+
     def add_transaction_step_data(
         self, 
         user_id: Union[str, int], 
