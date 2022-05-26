@@ -1,11 +1,11 @@
-from fastapi import BackgroundTasks, FastAPI, Request, Response
-from json.decoder import JSONDecodeError
 from time import sleep
+from requests.exceptions import ConnectionError # noqa
+from json.decoder import JSONDecodeError
+from fastapi import BackgroundTasks, FastAPI, Request, Response
 from handlers import commands_handler, events_handler # noqa
+from handlers.handler_config import bot
 from api.api_requests import UserAPIRequest
 from utils.redis_utils import RedisUtils
-from requests.exceptions import ConnectionError # noqa
-from handlers.handler_config import bot
 
 
 app = FastAPI()
