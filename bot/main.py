@@ -1,6 +1,6 @@
 from time import sleep
-from requests.exceptions import ConnectionError # noqa
 from json.decoder import JSONDecodeError
+from requests.exceptions import ConnectionError # noqa
 from fastapi import BackgroundTasks, FastAPI, Request, Response
 from handlers import commands_handler, events_handler # noqa
 from handlers.handler_config import bot

@@ -15,7 +15,8 @@ class Bot:
         url: Optional[str] = None,
         group_id: Optional[str] = None,
         secret: Optional[str] = None,
-        server_title: Optional[str] = None,
+        confirmation_code: Optional[str] = None,
+        server_title: Optional[str] = "MyCallbackServer",
     ) -> None:
         self.token = token
         self.api = vk_api.VkApi(token=self.token, api_version="5.131")
@@ -23,10 +24,10 @@ class Bot:
         self.url = url
         self.group_id = group_id or self.__get_group_id()
         self.secret = secret or self.__generate_secret_key()
-        self.server_title = server_title or "MyCallbackServer"
+        self.server_title = server_title
         self.commands = BotCommands()
         self.steps = StepHandler()
-        self.confirmation_code = None
+        self.confirmation_code = confirmation_code
 
     @staticmethod
     def __generate_secret_key() -> str:

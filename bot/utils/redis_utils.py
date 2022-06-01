@@ -2,7 +2,6 @@ from typing import Any, Set, Union
 from redis.commands.json.path import Path
 from settings import get_redis_settings
 import redis
-import json
 
 
 class RedisUtils:
