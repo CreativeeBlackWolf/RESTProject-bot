@@ -1,6 +1,6 @@
 from typing import Optional
-from pydantic import BaseSettings
 from functools import lru_cache
+from pydantic import BaseSettings
 
 
 class BotSettings(BaseSettings):
@@ -18,6 +18,7 @@ class BotSettings(BaseSettings):
 class RedisSettings(BaseSettings):
     host: str
     port: int
+    password: Optional[str] = None
 
     class Config:
         env_prefix = "REDIS_"
@@ -36,6 +37,7 @@ class APISetings(BaseSettings):
 @lru_cache
 def get_api_settings() -> APISetings:
     return APISetings()
+
 
 @lru_cache
 def get_redis_settings() -> RedisSettings:

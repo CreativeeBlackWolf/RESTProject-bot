@@ -1,25 +1,76 @@
-from typing import Set, Union
-import redis
+from typing import Any, Set, Union
+from redis.commands.json.path import Path
 from settings import get_redis_settings
+import redis
 
 
-config = get_redis_settings()
-redis_db = redis.StrictRedis(host=config.host,
-                             port=config.port,
-                             decode_responses=True,
-                             charset="utf-8")
+class RedisUtils:
+    """Helper class for working with the Redis database"""
 
-def delete_key(key: str):
-    return redis_db.delete(key)
+    transaction_step_data = "transaction_step_data"
+    wallet_step_data      = "wallet_step_data"
 
-def get_registered_users() -> Set[str]:
-    return redis_db.smembers("registered_users")
+    def __init__(self) -> None:
+        config = get_redis_settings()
+        self.__redis_db = redis.StrictRedis(host=config.host,
+                                            port=config.port,
+                                            password=config.password,
+                                            decode_responses=True,
+                                            charset="utf-8")
+        self.__redis_json = self.__redis_db.json()
 
-def is_registered_user(user_id: Union[str, int]) -> bool:
-    return redis_db.sismember("registered_users", user_id)
+        if not self.__redis_json.get(self.transaction_step_data) and \
+           not self.__redis_json.get(self.transaction_step_data):
+           
+            self.__redis_json.set(self.transaction_step_data, Path.root_path(), {})
+            self.__redis_json.set(self.wallet_step_data, Path.root_path(), {})
 
-def add_new_users(value: Union[list, str, int]):
-    if isinstance(value, (str, int)):
-        redis_db.sadd("registered_users", str(value))
-    elif isinstance(value, list):
-        redis_db.sadd("registered_users", *value)
+    def delete_key(self, key: str) -> bool:
+        return self.__redis_db.delete(key)
+
+    def get_registered_users(self) -> Set[str]:
+        """Get set of `registered_users`"""
+        return self.__redis_db.smembers("registered_users")
+
+    def is_registered_user(self, user_id: Union[str, int]) -> bool:
+        """Check if user is in `registered_users`"""
+        return self.__redis_db.sismember("registered_users", user_id)
+
+    def add_new_users(self, value: Union[list, str, int]):
+        if isinstance(value, (str, int)):
+            self.__redis_db.sadd("registered_users", str(value))
+        elif isinstance(value, list):
+            self.__redis_db.sadd("registered_users", *value)
+
+    def add_wallet_step_data(
+        self, 
+        user_id: Union[str, int], 
+        key: str, 
+        value: Union[str, int]
+    ) -> bool:
+        if not self.__redis_json.type(self.wallet_step_data, Path(f".{user_id}")):
+            self.__redis_json.set(self.wallet_step_data, Path(f".{user_id}"))
+        return self.__redis_json.set(self.wallet_step_data, Path(f".{user_id}.{key}"), value)
+
+    def get_wallet_step_data(self, user_id: Union[str, int]):
+        data = self.__redis_json.get(self.wallet_step_data, Path(f".{user_id}"))
+        self.__redis_json.delete(self.wallet_step_data, Path(f".{user_id}"))
+        return data
+
+    def add_transaction_step_data(
+        self, 
+        user_id: Union[str, int], 
+        key: str, 
+        value: Union[str, int]
+    ) -> bool:
+        if not self.__redis_json.type(self.transaction_step_data, Path(f".{user_id}")):
+            self.__redis_json.set(self.transaction_step_data, Path(f".{user_id}"), {})
+        return self.__redis_json.set(self.transaction_step_data, Path(f".{user_id}.{key}"), value)
+
+    def get_transaction_step_data(self, user_id: Union[str, int]) -> dict:
+        """
+        Get temporary transaction information and delete it.
+        """
+        data = self.__redis_json.get(self.transaction_step_data, Path(f".{user_id}"))
+        self.__redis_json.delete(self.transaction_step_data, Path(f".{user_id}"))
+        return data

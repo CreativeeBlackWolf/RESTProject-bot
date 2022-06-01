@@ -13,11 +13,17 @@ services:
       - ./.env
     depends_on:
       - redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
 
   redis:
-    image: redis:latest
+    image: "redislabs/redismod"
     ports:
       - "6379:6379"
     volumes:
-      - "./config/redis.conf:/redis.conf"
-    command: ["redis-server", "/redis.conf"]
+      - ./data:/data
+    entrypoint: >
+      redis-server
+        --loadmodule /usr/lib/redis/modules/rejson.so
+        --appendonly yes
