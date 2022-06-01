@@ -138,7 +138,8 @@ class TransactionsAPIRequest(UserAPIRequest):
         """
         if (to_wallet and whence) or (to_wallet is None and whence is None):
             raise TypeError(
-                "One of fields 'from_wallet' or 'whence' must have a value, neither both nor none of them."
+                "One of fields 'from_wallet' or 'whence' must have a value, \
+                neither both nor none of them."
             )
         data = {
             "from_wallet": from_wallet,
@@ -152,7 +153,12 @@ class TransactionsAPIRequest(UserAPIRequest):
             return request.json(), request.status_code
         return serialize_transaction(request.json()), request.status_code
 
-    def get_user_transactions(self, vk_id: int, limit: int=5, incoming=False) -> Tuple[Transaction, int]:
+    def get_user_transactions(
+        self, 
+        vk_id: int, 
+        limit: int = 5, 
+        incoming = False
+    ) -> Tuple[Transaction, int]:
         """
         Get transactions only for specified user.
 
