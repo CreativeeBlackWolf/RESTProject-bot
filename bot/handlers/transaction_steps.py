@@ -11,7 +11,6 @@ import json
 wallets_api = WalletAPIRequest()
 redis = RedisUtils()
 transactions_api = TransactionsAPIRequest()
-transactions = {}
 
 
 def transactions_to_or_whence_step(message: MessageNew):
