@@ -26,9 +26,9 @@ def process_new_wallet(message: MessageNew):
                          text=f"Кошелёк \"{message.text}\" успешно создан!",
                          keyboard=wallets_keyboard())
     elif status == 400:
-        message = "Кошелёк с таким названием уже существует. Придумай что-нибудь другое..."
+        send_message = "Кошелёк с таким названием уже существует. Придумай что-нибудь другое..."
         bot.send_message(message,
-                         text=message,
+                         text=send_message,
                          keyboard=wallets_keyboard())
     else:
         error_message(message, status)
