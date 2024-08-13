@@ -3,18 +3,21 @@ from schemas.models import Wallet
 from typing import List
 
 
-def EmptyKeyboard():
-    return VkKeyboard.get_empty_keyboard()
-
-def BackButton(keyboard: VkKeyboard) -> VkKeyboard:
+#region Buttons
+def back_button(keyboard: VkKeyboard) -> VkKeyboard:
     keyboard.add_line()
     keyboard.add_callback_button(label="Назад",
                                  color=VkKeyboardColor.NEGATIVE,
                                  payload={"cmd": "back_button"})
 
     return keyboard
+#endregion
 
-def MainKeyboard(registered_user: bool = False):
+#region Keyboards
+def get_empty_keyboard():
+    return VkKeyboard.get_empty_keyboard()
+
+def main_keyboard(registered_user: bool = False):
     keyboard = VkKeyboard()
     keyboard.add_button(label="Кошельки", color=VkKeyboardColor.PRIMARY)
     keyboard.add_button(label="Транзакции", color=VkKeyboardColor.POSITIVE)
@@ -27,7 +30,7 @@ def MainKeyboard(registered_user: bool = False):
 
     return keyboard.get_keyboard()
 
-def WalletsKeyboard():
+def wallets_keyboard():
     keyboard = VkKeyboard()
     keyboard.add_callback_button(label="Создать кошелёк",
                                  color=VkKeyboardColor.PRIMARY,
@@ -41,10 +44,10 @@ def WalletsKeyboard():
                                  color=VkKeyboardColor.PRIMARY,
                                  payload={"cmd": "edit_wallets"})
 
-    keyboard = BackButton(keyboard)
+    keyboard = back_button(keyboard)
     return keyboard.get_keyboard()
 
-def TransactionsKeyboard():
+def transactions_keyboard():
     keyboard = VkKeyboard()
     keyboard.add_callback_button(label="Исходящие транзакции",
                                  payload={"cmd": "show_outcoming_transactions"},
@@ -57,10 +60,10 @@ def TransactionsKeyboard():
                                  payload={"cmd": "make_transaction"},
                                  color=VkKeyboardColor.PRIMARY)
 
-    keyboard = BackButton(keyboard)
+    keyboard = back_button(keyboard)
     return keyboard.get_keyboard()
 
-def EditWalletsKeyboard():
+def edit_wallets_keyboard():
     keyboard = VkKeyboard(one_time=True)
     keyboard.add_callback_button(label="Редактировать кошелёк",
                                  color=VkKeyboardColor.PRIMARY,
@@ -70,10 +73,18 @@ def EditWalletsKeyboard():
                                  color=VkKeyboardColor.NEGATIVE,
                                  payload={"cmd": "delete_wallet"})
 
-    keyboard = BackButton(keyboard)
+    keyboard = back_button(keyboard)
     return keyboard.get_keyboard()
 
-def UserWalletsKeyboard(wallets: List[Wallet], show_balance: bool=True):
+def user_wallets_keyboard(wallets: List[Wallet], show_balance: bool=True):
+    """
+    Display keyboard with given wallets, so the user can select one.
+
+    Parameters
+    ----------
+    `show_balance`
+        Display the balance with wallet name.
+    """
     keyboard = VkKeyboard(one_time=True)
     for k, wallet in enumerate(wallets):
         payload = {}
@@ -82,7 +93,7 @@ def UserWalletsKeyboard(wallets: List[Wallet], show_balance: bool=True):
             label = wallet.name
         else:
             if len(wallet.name) > 20:
-                wallet.name = wallet.name[:15] + "..."
+                wallet.name = wallet.name[:17] + "..."
             label = label=f"{wallet.name} | Баланс: {wallet.balance}"
             payload["balance"] = wallet.balance
 
@@ -97,3 +108,4 @@ def UserWalletsKeyboard(wallets: List[Wallet], show_balance: bool=True):
             keyboard.add_line()
 
     return keyboard.get_keyboard()
+#endregion

@@ -3,6 +3,18 @@ from schemas.message import MessageEvent, MessageNew
 
 
 class BotCommands:
+    """
+    Class for storing and calling command and event handlers.
+
+    Definitions
+    -----------
+    command:
+        The text string (message) that the bot should respond to.
+    
+    event:
+        Should be presented in payload:
+            (example: payload: {"cmd": "some_event"})
+    """
     def __init__(self):
         # {"command_text": func}
         self._commands: Dict[str, Callable] = {}

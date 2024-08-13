@@ -1,11 +1,11 @@
-from schemas.message import (MessageEvent, MessageNew,
-                                serialize_message, MessageEventTypes)
 from typing import Any, Dict, List, Tuple, Union, Optional
-from commands.step_handler import StepHandler
-from commands.handler import BotCommands
 from vk_api.utils import get_random_id
 from secrets import token_hex
 from vk_api import vk_api
+from schemas.message import (MessageEvent, MessageNew,
+                             serialize_message, MessageEventTypes)
+from commands.step_handler import StepHandler
+from commands.handler import BotCommands
 
 
 class Bot:
@@ -15,8 +15,8 @@ class Bot:
         url: Optional[str] = None,
         group_id: Optional[str] = None,
         secret: Optional[str] = None,
-        server_title: Optional[str] = None,
-        commands: Optional[BotCommands] = None
+        confirmation_code: Optional[str] = None,
+        server_title: Optional[str] = "MyCallbackServer",
     ) -> None:
         self.token = token
         self.api = vk_api.VkApi(token=self.token, api_version="5.131")
@@ -24,9 +24,10 @@ class Bot:
         self.url = url
         self.group_id = group_id or self.__get_group_id()
         self.secret = secret or self.__generate_secret_key()
-        self.server_title = server_title or "MyCallbackServer"
-        self.commands = commands or BotCommands()
+        self.server_title = server_title
+        self.commands = BotCommands()
         self.steps = StepHandler()
+        self.confirmation_code = confirmation_code
 
     @staticmethod
     def __generate_secret_key() -> str:
@@ -36,12 +37,14 @@ class Bot:
         return self.api.method("groups.getById", values={})[0]["id"]
 
     def get_confirmation_code(self) -> str:
-        return self.api.method(
+        self.confirmation_code = self.api.method(
             "groups.getCallbackConfirmationCode",
             values={
                 "group_id": self.group_id
             }
         )["code"]
+        return self.confirmation_code
+
 
     def get_callback_servers(self) -> List[Dict[str, Any]]:
         data = {"group_id": self.group_id}
@@ -66,7 +69,11 @@ class Bot:
         self.api.method("groups.setCallbackSettings", values=data)
 
     def add_callback_server(self) -> int:
-        """returns server id"""
+        """
+        Create new callback server.
+
+        Returns `server_id`.
+        """
         data = {
             "group_id": self.group_id,
             "secret_key": self.secret,
@@ -77,6 +84,16 @@ class Bot:
         return result["server_id"]
 
     def edit_callback_server(self, server_id: int, secret_key: Optional[str] = None) -> None:
+        """
+        Edit existing callback server.
+
+        Parameters
+        ----------
+        `server_id`
+            ID of existing callback server.
+        `secret_key`
+            A new secret.
+        """
         if secret_key is None:
             secret_key = self.secret
 
@@ -91,7 +108,8 @@ class Bot:
 
     def setup_bot(self) -> Tuple[str, str]:
         """
-            returns confirmation code and secret
+        Setup an existing callback server or create new so the bot could recieve events.
+        Returns confirmation code and secret.
         """
 
         confirmation_code: str = self.get_confirmation_code()
@@ -112,6 +130,7 @@ class Bot:
 
     def handle_events(self, data):
         message = serialize_message(data)
+
         # not handling messages from conversations
         if message.from_conversation:
             return
